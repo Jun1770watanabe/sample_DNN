@@ -4,6 +4,7 @@ from chainer import cuda, Function, gradient_check, Variable, optimizers, serial
 from chainer import Link, Chain, ChainList
 import chainer.functions as F
 import chainer.links as L
+from tqdm import tqdm
 
 
 X = np.loadtxt('iris/iris-x.txt').astype(np.float32)
@@ -16,11 +17,14 @@ for i in range(N):
     Y2[i, int(Y[i])] = 1.0
 
 index = np.arange(N)
-xtrain = X[index[index % 2 != 0],:]
+xtrain = X[index[index % 2 != 0],:] 
 ytrain = Y2[index[index % 2 != 0],:]
 xtest = X[index[index % 2 == 0],:]
 yans = Y[index[index % 2 == 0]]
 
+print(xtrain)
+print(ytrain)
+exit()
 
 class IrisChain(Chain):
     def __init__(self):
@@ -39,7 +43,7 @@ model = IrisChain()
 optimizer = optimizers.SGD()
 optimizer.setup(model)
 
-for i in range(10000):
+for i in tqdm(range(10000)):
     x = Variable(xtrain)
     y = Variable(ytrain)
     model.zerograds()
