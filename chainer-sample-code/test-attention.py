@@ -10,7 +10,7 @@ import chainer.functions as F
 import chainer.links as L
 
 jvocab = {}
-jlines = open('jp.txt').read().split('\n')
+jlines = open('text/JEC_jap2.txt').read().split('\n')
 for i in range(len(jlines)):
     lt = jlines[i].split()
     for w in lt:
@@ -22,7 +22,7 @@ jv = len(jvocab)
             
 evocab = {}
 id2wd = {}
-elines = open('eng.txt').read().split('\n')
+elines = open('text/JEC_eng2.txt', encoding="utf-8").read().split('\n')
 for i in range(len(elines)):
     lt = elines[i].split()
     for w in lt:
@@ -98,7 +98,7 @@ def mt(model, jline):
    ct = mk_ct(gh, h.data[0])
    h2 = F.tanh(model.Wc1(ct) + model.Wc2(h))   
    wid = np.argmax(F.softmax(model.W(h2)).data[0])
-   print id2wd[wid],
+   print(id2wd[wid])
    loop = 0
    while (wid != evocab['<eos>']) and (loop <= 30):
        x_k = model.embedy(Variable(np.array([wid], dtype=np.int32), volatile='on'))
@@ -106,11 +106,10 @@ def mt(model, jline):
        ct = mk_ct(gh, h.data)
        h2 = F.tanh(model.Wc1(ct) + model.Wc2(h))                   
        wid = np.argmax(F.softmax(model.W(h2)).data[0])
-       print id2wd[wid],
+       print(id2wd[wid])
        loop += 1
-   print 
   
-jlines = open('jp-test.txt').read().split('\n')
+jlines = open('text/JEC_jap_test.txt').read().split('\n')
 
 for epoch in range(100):
     model = MyATT(jv, ev, demb)
@@ -119,5 +118,5 @@ for epoch in range(100):
     for i in range(len(jlines)-1):
         jln = jlines[i].split()
         jlnr = jln[::-1]
-        print epoch,": ",         
+        print("epoch: {}".format(epoch))         
         mt(model, jlnr)

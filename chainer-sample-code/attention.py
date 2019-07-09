@@ -8,9 +8,10 @@ from chainer import cuda, Function, gradient_check, Variable, \
 from chainer import Link, Chain, ChainList
 import chainer.functions as F
 import chainer.links as L
+from tqdm import tqdm
 
 jvocab = {}
-jlines = open('jp.txt').read().split('\n')
+jlines = open('text/JEC_jap2_hira.txt').read().split('\n')
 for i in range(len(jlines)):
     lt = jlines[i].split()
     for w in lt:
@@ -22,7 +23,7 @@ jv = len(jvocab)
             
 evocab = {}
 id2wd = {}
-elines = open('eng.txt').read().split('\n')
+elines = open('text/JEC_eng2.txt', encoding="utf-8").read().split('\n')
 for i in range(len(elines)):
     lt = elines[i].split()
     for w in lt:
@@ -90,7 +91,7 @@ model = MyATT(jv, ev, demb)
 optimizer = optimizers.Adam()
 optimizer.setup(model)
 
-for epoch in range(100):
+for epoch in tqdm(range(100)):
     for i in range(len(jlines)-1):
         jln = jlines[i].split()
         jlnr = jln[::-1]
@@ -101,7 +102,7 @@ for epoch in range(100):
         loss.backward()
         loss.unchain_backward()  # truncate
         optimizer.update()
-        print i, " finished"
-    outfile = "attention-" + str(epoch) + ".model"
+        # print i, " finished"
+    outfile = "{dir}/at-{ep}.{ext}".format(dir="model", ep=epoch, ext="model")
     serializers.save_npz(outfile, model)
 
