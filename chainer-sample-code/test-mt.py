@@ -8,9 +8,10 @@ from chainer import cuda, Function, gradient_check, Variable, \
 from chainer import Link, Chain, ChainList
 import chainer.functions as F
 import chainer.links as L
+from tqdm import tqdm
 
 jvocab = {}
-jlines = open('jp.txt').read().split('\n')
+jlines = open('text/JEC_jap_test.txt').read().split('\n')
 for i in range(len(jlines)):
     lt = jlines[i].split()
     for w in lt:
@@ -22,7 +23,7 @@ jv = len(jvocab)
             
 evocab = {}
 id2wd = {}
-elines = open('eng.txt').read().split('\n')
+elines = open('text/JEC_eng_test.txt').read().split('\n')
 for i in range(len(elines)):
     lt = elines[i].split()
     for w in lt:
@@ -73,20 +74,19 @@ def mt(model, jline):
    h = model.H(x_k)
    wid = np.argmax(F.softmax(model.W(h)).data[0])
    if wid in id2wd:
-       print id2wd[wid],
+       print(id2wd[wid])
    else:
-       print wid,
+       print(wid)
    loop = 0
    while (wid != evocab['<eos>']) and (loop <= 30):
        x_k = model.embedy(Variable(np.array([wid], dtype=np.int32), volatile='on'))
        h = model.H(x_k)
        wid = np.argmax(F.softmax(model.W(h)).data[0])
        if wid in id2wd:
-           print id2wd[wid],
+           print(id2wd[wid])
        else:
-           print wid,       
+           print(wid)       
        loop += 1
-   print 
   
 jlines = open('jp-test.txt').read().split('\n')
 
@@ -98,6 +98,5 @@ for epoch in range(100):
     for i in range(len(jlines)-1):
         jln = jlines[i].split()
         jlnr = jln[::-1]
-        print epoch,": ",
+        print("epoch: {}".format(epoch))
         mt(model, jlnr)
-
