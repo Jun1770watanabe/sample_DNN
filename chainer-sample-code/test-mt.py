@@ -11,7 +11,7 @@ import chainer.links as L
 from tqdm import tqdm
 
 jvocab = {}
-jlines = open('text/JEC_jap_test.txt').read().split('\n')
+jlines = open('text/JEC_jap2.txt').read().split('\n')
 for i in range(len(jlines)):
     lt = jlines[i].split()
     for w in lt:
@@ -23,7 +23,7 @@ jv = len(jvocab)
             
 evocab = {}
 id2wd = {}
-elines = open('text/JEC_eng_test.txt').read().split('\n')
+elines = open('text/JEC_eng2.txt', encoding="utf-8").read().split('\n')
 for i in range(len(elines)):
     lt = elines[i].split()
     for w in lt:
@@ -66,37 +66,57 @@ class MyMT(chainer.Chain):
         return accum_loss
 
 def mt(model, jline):
-   for i in range(len(jline)):
-       wid = jvocab[jline[i]]
-       x_k = model.embedx(Variable(np.array([wid], dtype=np.int32), volatile='on'))
-       h = model.H(x_k)
-   x_k = model.embedx(Variable(np.array([jvocab['<eos>']], dtype=np.int32), volatile='on'))
-   h = model.H(x_k)
-   wid = np.argmax(F.softmax(model.W(h)).data[0])
-   if wid in id2wd:
-       print(id2wd[wid])
-   else:
-       print(wid)
-   loop = 0
-   while (wid != evocab['<eos>']) and (loop <= 30):
-       x_k = model.embedy(Variable(np.array([wid], dtype=np.int32), volatile='on'))
-       h = model.H(x_k)
-       wid = np.argmax(F.softmax(model.W(h)).data[0])
-       if wid in id2wd:
-           print(id2wd[wid])
-       else:
-           print(wid)       
-       loop += 1
+    for i in range(len(jline)):
+        wid = jvocab[jline[i]]
+        with chainer.using_config('enable_backprop', False):
+            x_k = model.embedx(Variable(np.array([wid], dtype=np.int32)))
+            h = model.H(x_k)
+
+    with chainer.using_config('enable_backprop', False):
+        x_k = model.embedx(Variable(np.array([jvocab['<eos>']], dtype=np.int32)))
+        h = model.H(x_k)
+
+    wid = np.argmax(F.softmax(model.W(h)).data[0])
+    if wid in id2wd:
+        print(id2wd[wid])
+    else:
+        print(wid)
+    loop = 0
+    while (wid != evocab['<eos>']) and (loop <= 30):
+        with chainer.using_config('enable_backprop', False):
+            x_k = model.embedy(Variable(np.array([wid], dtype=np.int32)))
+            h = model.H(x_k)
+
+        wid = np.argmax(F.softmax(model.W(h)).data[0])
+        if wid in id2wd:
+            print(id2wd[wid])
+        else:
+            print(wid)       
+        loop += 1
   
-jlines = open('jp-test.txt').read().split('\n')
+jlines = open('text/JEC_jap_test.txt', encoding="utf-8").read().split('\n')
+
+# demb = 100
+# for epoch in range(100):
+#     model = MyMT(jv, ev, demb)
+#     filename = "mt-" + str(epoch) + ".model"
+#     serializers.load_npz(filename, model)    
+#     for i in range(len(jlines)-1):
+#         jln = jlines[i].split()
+#         jlnr = jln[::-1]
+#         print("epoch: {}".format(epoch))
+#         mt(model, jlnr)
 
 demb = 100
-for epoch in range(100):
-    model = MyMT(jv, ev, demb)
-    filename = "mt-" + str(epoch) + ".model"
-    serializers.load_npz(filename, model)    
-    for i in range(len(jlines)-1):
-        jln = jlines[i].split()
-        jlnr = jln[::-1]
-        print("epoch: {}".format(epoch))
-        mt(model, jlnr)
+
+model = MyMT(jv, ev, demb)
+filename = "model/mt-99.model"
+serializers.load_npz(filename, model)
+
+for i in range(len(jlines)-1):
+    jln = jlines[0].split()
+    print(jln)
+    jlnr = jln[::-1]
+    print(jlnr)
+    serializers.load_npz(filename, model)
+    mt(model, jlnr)
