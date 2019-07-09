@@ -10,6 +10,7 @@ import chainer.links as L
 
 from chainer.utils import walker_alias
 import collections
+from tqdm import tqdm
 
 # Set data
 
@@ -97,8 +98,9 @@ bs = 100
 for epoch in range(10):
     print('epoch: {0}'.format(epoch))
     indexes = np.random.permutation(datasize)
-    for pos in range(0, datasize, bs):
-        print epoch, pos
+    for pos in tqdm(range(0, datasize, bs)):
+        # print(epoch)
+        # print(pos)
         ids = indexes[pos:(pos+bs) if (pos+bs) < datasize else datasize]
         xb, yb, tb = mkbatset(dataset, ids)
         model.zerograds()        

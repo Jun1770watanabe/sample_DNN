@@ -8,9 +8,10 @@ from chainer import cuda, Function, gradient_check, Variable, \
 from chainer import Link, Chain, ChainList
 import chainer.functions as F
 import chainer.links as L
+from tqdm import tqdm
 
 jvocab = {}
-jlines = open('jp.txt').read().split('\n')
+jlines = open('text/JEC_jap_test.txt').read().split('\n')
 for i in range(len(jlines)):
     lt = jlines[i].split()
     for w in lt:
@@ -22,7 +23,7 @@ jv = len(jvocab)
             
 evocab = {}
 id2wd = {}
-elines = open('eng.txt').read().split('\n')
+elines = open('text/JEC_eng_test.txt').read().split('\n')
 for i in range(len(elines)):
     lt = elines[i].split()
     for w in lt:
@@ -98,6 +99,6 @@ for epoch in range(100):
     for i in range(len(jlines)-1):
         jln = jlines[i].split()
         jlnr = jln[::-1]
-        print epoch,": ",
+        print("epoch: {}".format(epoch))
         mt(model, jlnr)
-
+        

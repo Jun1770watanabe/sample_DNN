@@ -8,9 +8,10 @@ from chainer import cuda, Function, gradient_check, Variable, \
 from chainer import Link, Chain, ChainList
 import chainer.functions as F
 import chainer.links as L
+from tqdm import tqdm
 
 jvocab = {}
-jlines = open('jp.txt').read().split('\n')
+jlines = open('text/JEC_jap2.txt').read().split('\n')
 for i in range(len(jlines)):
     lt = jlines[i].split()
     for w in lt:
@@ -19,9 +20,9 @@ for i in range(len(jlines)):
 
 jvocab['<eos>'] = len(jvocab)
 jv = len(jvocab)
-            
+
 evocab = {}
-elines = open('eng.txt').read().split('\n')
+elines = open('text/JEC_eng2.txt',encoding="utf-8").read().split('\n')
 for i in range(len(elines)):
     lt = elines[i].split()
     for w in lt:
@@ -64,7 +65,7 @@ optimizer = optimizers.Adam()
 optimizer.setup(model)
 
 for epoch in range(100):
-    for i in range(len(jlines)-1):
+    for i in tqdm(range(len(jlines)-1)):
         jln = jlines[i].split()
         jlnr = jln[::-1]
         eln = elines[i].split()
@@ -72,9 +73,12 @@ for epoch in range(100):
         model.zerograds()        
         loss = model(jlnr, eln)
         loss.backward()
-        loss.unchain_backward()  # truncate        
+        loss.unchain_backward()  # truncate
         optimizer.update()
-        print i, " finished"
+        # print("{} finished".format(i))
     outfile = "mt-" + str(epoch) + ".model"
-    serializers.save_npz(outfile, model)
+
+    dir_pass = "{out_dir}/{outfile}".format(out_dir="model", outfile=outfile)
+
+    serializers.save_npz(dir_pass, model)
 
