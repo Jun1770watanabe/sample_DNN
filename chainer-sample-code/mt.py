@@ -11,8 +11,10 @@ import chainer.links as L
 
 jvocab = {}
 jlines = open('jp.txt').read().split('\n')
+print(jlines)
 for i in range(len(jlines)):
     lt = jlines[i].split()
+    print(lt)
     for w in lt:
         if w not in jvocab:
             jvocab[w] = len(jvocab)
@@ -59,7 +61,11 @@ class MyMT(chainer.Chain):
         return accum_loss
 
 demb = 100
+print(jv)
+print(ev)
 model = MyMT(jv, ev, demb)
+print(model)
+exit()
 optimizer = optimizers.Adam()
 optimizer.setup(model)
 
@@ -74,7 +80,8 @@ for epoch in range(100):
         loss.backward()
         loss.unchain_backward()  # truncate        
         optimizer.update()
-        print i, " finished"
+        print(i)
+        print(" finished")
     outfile = "mt-" + str(epoch) + ".model"
     serializers.save_npz(outfile, model)
 
